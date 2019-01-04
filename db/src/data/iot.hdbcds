@@ -1,0 +1,47 @@
+context iot {
+    @Comment : 'Sensor Datapoint Header Definition'
+    entity DataPoint {
+            @Comment : 'unique Id of datapoint'
+        key dp_id         : Integer     not null;
+
+            @Comment : 'name of table that stores values of sensor'
+            table_name    : String(255) not null;
+
+            @Comment : 'technical address of sensor'
+            address       : String(16)  not null;
+
+            @Comment : 'identifier of sensor'
+            identifier    : String(40)  not null;
+
+            @Comment : 'description of sensor'
+            display_name  : String(255);
+            room          : String(255);
+            param_set     : String(20);
+            unit          : String(20);
+            maximum       : DecimalFloat;
+            minimum       : DecimalFloat;
+            type          : String(10);
+            default_value : DecimalFloat;
+            last_ts_read  : LocalDate;
+    }
+    technical configuration {
+        column store;
+    };
+
+    entity Settings {
+        key param : String(50) not null;
+        key index : Integer    not null;
+            value : String(255);
+    }
+    technical configuration {
+        column store;
+    };
+
+    entity SettingParameters {
+        key param       : String(50) not null;
+            description : String(60);
+    }
+    technical configuration {
+        column store;
+    };
+};

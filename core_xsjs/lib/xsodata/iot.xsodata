@@ -1,0 +1,10 @@
+service {
+    "iot.Settings"
+	  as "Settings";
+
+	"iot.SettingParameters"
+	  as "SettingParameters";
+
+    "iot.DataPoint"
+    	as "DataPoint";
+}

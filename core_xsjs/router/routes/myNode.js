@@ -52,27 +52,239 @@ function getBlacklist() {
 	}
 }
 
-function getCurrentDatapoints() {
+function isBlacklisted(sIdentifier) {
+	for (var i in aBlacklist) {
+		if (sIdentifier === aBlacklist[i]) {
+			return true;
+		}
+	}
+	return false;
+}
 
+function storeNewDatapoint(iDP, oDP) {
+	//console.log("Creating new datapoint " + iDP);
+	var iDPId = iDP;
+	var oDPObject = oDP;
+	connection.prepare(
+		"insert into \"iot.DataPoint\" values(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+		function (err, statement) {
+			if (err) {
+				console.log("Could not insert new datapoint");
+				return;
+			}
+			statement.exec([
+					[parseInt(iDPId),
+						oDPObject.result.historyTableName,
+						oDPObject.result.id.address,
+						oDPObject.result.id.identifier,
+						oDPObject.result.attributes.displayName,
+						oDPObject.result.attributes.room,
+						oDPObject.result.attributes.paramSet,
+						oDPObject.result.attributes.unit,
+						oDPObject.result.attributes.maximum,
+						oDPObject.result.attributes.minimum,
+						oDPObject.result.attributes.type,
+						oDPObject.result.attributes.defaultValue,
+						null
+					]
+				],
+				function (err, results) {
+					aDatapoints.push(parseInt(iDPId));
+				});
+		});
+}
+
+function fetchDatapoint(iDP) {
+	var iDatapoint = iDP;
+	console.log("trying to fetch datapoint " + iDP);
+
+	request('http://' + sCCUIP + ':' + sCCUPort + "/query/jsonrpc.gy?m=getDataPoint&p1=" + iDP, function (error, response, body) {
+		if (error) {
+			console.log(error);
+			return;
+		}
+		if (response.statusCode == 200) {
+			var oDP = JSON.parse(body);
+			if (oDP.result) {
+				if (oDP.result.id.identifier && isBlacklisted(oDP.result.id.identifier)) {
+					console.log(oDP.result.id.identifier + " is blacklisted");
+				} else {
+					storeNewDatapoint(iDatapoint, oDP);
+				}
+			}
+		}
+	});
+}
+
+function intervalSync() {
+	//console.log("Getting new data from registered datapoints");
+	if (roundRobin < aDatapoints.length) {
+		console.log("Getting new data for datapoint " + aDatapoints[roundRobin] + " ...");
+		getNewData(aDatapoints[roundRobin]);
+		roundRobin++;
+	} else {
+		roundRobin = 0;
+		intervalSync();
+	}
+}
+
+function readData(iDP, sType, tsFrom, tsTo) {
+	var ts2 = tsTo,
+		ts1 = tsFrom,
+		iDelta = tsTo - tsFrom,
+		iDPId = iDP,
+		sDataType = sType,
+		sQuery = {
+			"id": iDPId,
+			"method": "getTimeSeriesRaw",
+			"params": [iDPId, ts1, ts2]
+		},
+		sUrl = 'http://' + sCCUIP + ':' + sCCUPort + "/query/jsonrpc.gy?j=" + JSON.stringify(sQuery);
+	if (new Date(ts1).toLocaleString() == new Date(ts2).toLocaleString()) {
+		console.log("Datapoint " + iDPId + " is up to date...next please...");
+		// connection.query({
+		// 	namedPlaceholders: true,
+		// 	sql: "UPDATE homematic_data_points SET LAST_TS_READ = :last_ts_read WHERE DP_ID = :dp_id"
+		// }, {
+		// 	last_ts_read: new Date(ts2-600),
+		// 	dp_id: iDPId
+		// }).then(res => {
+		// 	console.log("Storing new timestamp for datapoint " + iDPId);
+		intervalSync();
+		// }).catch(err => {
+		// 	console.log("Update Error" + err);
+		// })
+
+	} else {
+		//no more than 5 days at once...
+		if (iDelta > 432000000) {
+			readData(iDP, sDataType, ts1, (ts2 - parseInt(iDelta / 2)));
+		} else {
+			console.log("Datapoint " + iDPId + ": now getting data from " + new Date(ts1).toLocaleString() + " to " + new Date(ts2).toLocaleString());
+			request(sUrl, function (error, response, body) {
+				if (error) {
+					console.log(error);
+					intervalSync();
+				} else if (response) {
+					if (response.statusCode == 200) {
+						var oResult = JSON.parse(body);
+						if (oResult) {
+							if (oResult.result.states.length === 0) {
+								readData(iDPId, sDataType, ts2, new Date().getTime());
+							} else {
+								console.log(oResult.result.states.length + " records received. Storing now...");
+
+								//var iData = [];
+								for (var s in oResult.result.states) {
+									// iData.push(
+									// 	parseInt(iDPId),
+									// 	new Date(oResult.result.timestamps[s]),
+									// 	oResult.result.values[s],
+									// 	oResult.result.states[s]
+									// );
+
+									if (sDataType === "D") {
+										connection.prepare(
+											"insert into \"iot.DataValuesNum\" values(?,?,?,?)",
+											function (err, statement) {
+												if (err) {
+													console.log("Could not insert new data");
+													return;
+												}
+												statement.exec([
+														[parseInt(iDPId),
+															new Date(oResult.result.timestamps[s]),
+															oResult.result.values[s],
+															oResult.result.states[s]
+														]
+													],
+													function (err, results) {
+														if (err) {
+															console.log(err);
+														}
+														if (results) {
+															console.log(results);
+														}
+													});
+											});
+									}
+								}
+
+							}
+
+						}
+					}
+				}
+			});
+
+		}
+	}
+
+}
+
+function getNewData(iDP) {
+	var iDPId = iDP;
+	connection.prepare(
+		"select \"last_ts_read\",\"table_name\" from \"iot.DataPoint\" where \"dp_id\" =  " + iDPId,
+		function (err, statement) {
+			if (err) {
+				console.log("last timestamp of datapoint " + iDPId + " could not be read");
+				return;
+			}
+			statement.exec([],
+				function (err, results) {
+					if (err) {
+						console.log("last timestamp of datapoint " + iDPId + " could not be read");
+						return;
+					} else {
+						if (results[0].last_ts_read === null) {
+							var tsFrom = new Date("2018-12-01").getTime(),
+								tsTo = new Date().getTime();
+							readData(iDPId, results[0].table_name.substring(0, 1), tsFrom, tsTo);
+						}
+					}
+				});
+		});
 	// connection.query({
 	// 	rowsAsArray: true,
-	// 	sql: 'SELECT DP_ID FROM homematic_data_points'
+	// 	sql: 'SELECT LAST_TS_READ, TABLE_NAME FROM homematic_data_points WHERE DP_ID = ' + iDPId
 	// })
 	// .then((rows) => {
-
-	// 	for (var i = 0; i < rows.length; i++) {
-	// 		aDatapoints.push(parseInt(rows[i]));
+	// 	if (rows[0][0] === null) {
+	// 		console.log("Last TS of datapoint " + iDPId + " is null! Fetching complete Interval!");
+	// 		var tsFrom = new Date("2016-01-01").getTime(),
+	// 		tsTo = new Date().getTime();
+	// 		readData(iDPId, tsFrom, tsTo, rows[0][1]);
+	// 	} else {
+	// 		console.log("Last TS of datapoint " + iDPId + " is " + rows[0][0]);
+	// 		var tsFrom = new Date(rows[0][0]).getTime(),
+	// 		tsTo = new Date().getTime();
+	// 		readData(iDPId, tsFrom, tsTo, rows[0][1]);
 	// 	}
-	// 	console.log(aDatapoints.length + " datapoints already registered");
-	// 	console.log("Trying to fetch new datapoints");
-	// 	checkForNewDatapoints();
+	// }).catch(err => {
+	// 	console.log("Last TS of datapoint " + iDPId + " could not be read " + err);
+	// })
+}
 
-	// })
-	// .catch(err => {
-	// 	console.log("Existing datapoints could not be read");
-	// })
+function checkForNewDatapoints() {
+	for (var i = 1; i <= iDataPointMax; i++) {
+		var bExists = false;
+		for (var j = 0; j < aDatapoints.length; j++) {
+			if (aDatapoints[j] === i) {
+				bExists = true;
+				break;
+			}
+		}
+		if (!bExists) {
+			fetchDatapoint(i);
+		}
+	}
+	intervalSync();
+}
+
+function getCurrentDatapoints() {
 	connection.prepare(
-		"select * from \"iot.DataPoint\" ",
+		"select \"dp_id\" from \"iot.DataPoint\" ",
 		function (err, statement) {
 			if (err) {
 				console.log("Existing datapoints could not be read");
@@ -85,10 +297,11 @@ function getCurrentDatapoints() {
 						return;
 					} else {
 						for (var i = 0; i < results.length; i++) {
-							aDatapoints.push(parseInt(results[i]));
+							aDatapoints.push(parseInt(results[i].dp_id));
 						}
 						//console.log(aDatapoints.length + " datapoints already registered");
 						//console.log("Trying to fetch new datapoints");
+						checkForNewDatapoints();
 					}
 				});
 		});

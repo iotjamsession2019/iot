@@ -29,6 +29,7 @@ modules:
       - name: UAA-service
       - name: hdi_db
       - name: db
+      - name: CCU_HISTORIAN
 resources:
   - name: UAA-service
     type: com.sap.xs.uaa-space
@@ -41,3 +42,9 @@ resources:
     properties:
       hdi-container-name: '${service-name}'
     type: com.sap.xs.hdi-container
+  - name: CCU_HISTORIAN
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: CCU_HISTORIAN
+    properties:
+      CCU_HISTORIAN: '${service-name}'

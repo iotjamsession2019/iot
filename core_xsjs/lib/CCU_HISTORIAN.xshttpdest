@@ -1,0 +1,6 @@
+description = "CCU-HISTORIAN";
+host = "192.168.1.33";
+port = 8080;
+proxyType = none;
+authType = none;
+timeout = 0;

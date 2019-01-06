@@ -22,7 +22,7 @@ context iot {
             minimum       : DecimalFloat;
             type          : String(10);
             default_value : DecimalFloat;
-            last_ts_read  : LocalDate;
+            last_ts_read  : UTCDateTime;
     }
     technical configuration {
         column store;
@@ -46,7 +46,7 @@ context iot {
     };
     entity DataValuesNum {
         key dp_id       : Integer     not null;
-        key ts          : LocalDate   not null;
+        key ts          : UTCDateTime not null;
             value       : DecimalFloat;
             state       : Integer;
     }
@@ -55,7 +55,7 @@ context iot {
     };
     entity DataValuesChar {
         key dp_id       : Integer     not null;
-        key ts          : LocalDate   not null;
+        key ts          : UTCDateTime not null;
             value       : String(80);
             state       : Integer;
     }

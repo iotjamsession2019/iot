@@ -142,19 +142,28 @@ function readData(iDP, sType, tsFrom, tsTo) {
 		sUrl = 'http://' + sCCUIP + ':' + sCCUPort + "/query/jsonrpc.gy?j=" + JSON.stringify(sQuery);
 	if (new Date(ts1).toLocaleString() == new Date(ts2).toLocaleString()) {
 		console.log("Datapoint " + iDPId + " is up to date...next please...");
-		// connection.query({
-		// 	namedPlaceholders: true,
-		// 	sql: "UPDATE homematic_data_points SET LAST_TS_READ = :last_ts_read WHERE DP_ID = :dp_id"
-		// }, {
-		// 	last_ts_read: new Date(ts2-600),
-		// 	dp_id: iDPId
-		// }).then(res => {
-		// 	console.log("Storing new timestamp for datapoint " + iDPId);
-		intervalSync();
-		// }).catch(err => {
-		// 	console.log("Update Error" + err);
-		// })
-
+		connection.prepare("update \"iot.DataPoint\" set \"last_ts_read\" = ? where \"dp_id\" = ? ",
+			function (err, statement) {
+				if (err) {
+					console.log("Could not insert new data");
+					return;
+				}
+				statement.exec([
+						[new Date(ts2-600).toISOString(),
+							iDPId
+						]
+					],
+					function (err, results) {
+						if (err) {
+							console.log(err);
+							return;
+						}
+						console.log("Storing new timestamp for datapoint " + iDPId);
+						intervalSync();
+						
+					});
+			});
+		
 	} else {
 		//no more than 5 days at once...
 		if (iDelta > 432000000) {
@@ -182,33 +191,56 @@ function readData(iDP, sType, tsFrom, tsTo) {
 									// 	oResult.result.values[s],
 									// 	oResult.result.states[s]
 									// );
-
+									var insertStatement = "";
 									if (sDataType === "D") {
-										connection.prepare(
-											"insert into \"iot.DataValuesNum\" values(?,?,?,?)",
-											function (err, statement) {
+										insertStatement = "insert into \"iot.DataValuesNum\" values(?,?,?,?)";
+									} else {
+										insertStatement = "insert into \"iot.DataValuesChar\" values(?,?,?,?)";
+									}
+									connection.prepare(insertStatement,
+										function (err, statement) {
+											if (err) {
+												console.log("Could not insert new data");
+												return;
+											}
+											statement.exec([
+													[parseInt(iDPId),
+														new Date(oResult.result.timestamps[s]).toISOString(),
+														oResult.result.values[s],
+														oResult.result.states[s]
+													]
+												],
+												function (err, results) {
+													if (err) {
+														console.log(err);
+													}
+													if (results) {
+														console.log(results);
+													}
+												});
+										});
+
+								}
+								//store last_ts_read
+								connection.prepare("update \"iot.DataPoint\" set \"last_ts_read\" = ? where \"dp_id\" = ? ",
+									function (err, statement) {
+										if (err) {
+											console.log("Could not insert new data");
+											return;
+										}
+										statement.exec([
+												[new Date(ts2).toISOString(),
+													iDPId
+												]
+											],
+											function (err, results) {
 												if (err) {
-													console.log("Could not insert new data");
+													console.log(err);
 													return;
 												}
-												statement.exec([
-														[parseInt(iDPId),
-															new Date(oResult.result.timestamps[s]),
-															oResult.result.values[s],
-															oResult.result.states[s]
-														]
-													],
-													function (err, results) {
-														if (err) {
-															console.log(err);
-														}
-														if (results) {
-															console.log(results);
-														}
-													});
+												console.log("New data for datapoint " + iDPId + " written successfully");
 											});
-									}
-								}
+									});
 
 							}
 

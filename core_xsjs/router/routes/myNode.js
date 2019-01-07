@@ -106,7 +106,8 @@ function fetchDatapoint(iDP) {
 		if (response.statusCode == 200) {
 			var oDP = JSON.parse(body);
 			if (oDP.result) {
-				if (oDP.result.id.identifier && isBlacklisted(oDP.result.id.identifier)) {
+				if (oDP.result.id.identifier && isBlacklisted(oDP.result.id.identifier) ||
+					oDP.result.historyTableName.substring(0, 1) !== "D") {
 					console.log(oDP.result.id.identifier + " is blacklisted");
 				} else {
 					storeNewDatapoint(iDatapoint, oDP);
@@ -118,6 +119,9 @@ function fetchDatapoint(iDP) {
 
 function intervalSync() {
 	//console.log("Getting new data from registered datapoints");
+	if (aDatapoints.length === 0) {
+		return;
+	}
 	if (roundRobin < aDatapoints.length) {
 		console.log("Getting new data for datapoint " + aDatapoints[roundRobin] + " ...");
 		getNewData(aDatapoints[roundRobin]);
@@ -128,12 +132,11 @@ function intervalSync() {
 	}
 }
 
-function readData(iDP, sType, tsFrom, tsTo) {
+function readData(iDP, tsFrom, tsTo) {
 	var ts2 = tsTo,
 		ts1 = tsFrom,
 		iDelta = tsTo - tsFrom,
 		iDPId = iDP,
-		sDataType = sType,
 		sQuery = {
 			"id": iDPId,
 			"method": "getTimeSeriesRaw",
@@ -149,7 +152,7 @@ function readData(iDP, sType, tsFrom, tsTo) {
 					return;
 				}
 				statement.exec([
-						[new Date(ts2-600).toISOString(),
+						[new Date(ts2 - 600).toISOString(),
 							iDPId
 						]
 					],
@@ -160,14 +163,14 @@ function readData(iDP, sType, tsFrom, tsTo) {
 						}
 						console.log("Storing new timestamp for datapoint " + iDPId);
 						intervalSync();
-						
+
 					});
 			});
-		
+
 	} else {
 		//no more than 5 days at once...
 		if (iDelta > 432000000) {
-			readData(iDP, sDataType, ts1, (ts2 - parseInt(iDelta / 2)));
+			readData(iDP, ts1, (ts2 - parseInt(iDelta / 2)));
 		} else {
 			console.log("Datapoint " + iDPId + ": now getting data from " + new Date(ts1).toLocaleString() + " to " + new Date(ts2).toLocaleString());
 			request(sUrl, function (error, response, body) {
@@ -179,48 +182,43 @@ function readData(iDP, sType, tsFrom, tsTo) {
 						var oResult = JSON.parse(body);
 						if (oResult) {
 							if (oResult.result.states.length === 0) {
-								readData(iDPId, sDataType, ts2, new Date().getTime());
+								readData(iDPId, ts2, new Date().getTime());
 							} else {
 								console.log(oResult.result.states.length + " records received. Storing now...");
 
-								//var iData = [];
+								var iData = [];
 								for (var s in oResult.result.states) {
-									// iData.push(
-									// 	parseInt(iDPId),
-									// 	new Date(oResult.result.timestamps[s]),
-									// 	oResult.result.values[s],
-									// 	oResult.result.states[s]
-									// );
-									var insertStatement = "";
-									if (sDataType === "D") {
-										insertStatement = "insert into \"iot.DataValuesNum\" values(?,?,?,?)";
-									} else {
-										insertStatement = "insert into \"iot.DataValuesChar\" values(?,?,?,?)";
-									}
-									connection.prepare(insertStatement,
-										function (err, statement) {
-											if (err) {
-												console.log("Could not insert new data");
-												return;
-											}
-											statement.exec([
-													[parseInt(iDPId),
-														new Date(oResult.result.timestamps[s]).toISOString(),
-														oResult.result.values[s],
-														oResult.result.states[s]
-													]
-												],
-												function (err, results) {
-													if (err) {
-														console.log(err);
-													}
-													if (results) {
-														console.log(results);
-													}
-												});
-										});
-
+									iData.push(
+										parseInt(iDPId),
+										new Date(oResult.result.timestamps[s]).toISOString(),
+										parseFloat(oResult.result.values[s]),
+										parseInt(oResult.result.states[s])
+									);
 								}
+
+								connection.prepare("insert into \"iot.DataValues\" values(?,?,?,?)",
+									function (err, statement) {
+										if (err) {
+											console.log("Could not insert new data");
+											return;
+										}
+										statement.exec([ iData 
+												// [parseInt(iDPId),
+												// 	new Date(oResult.result.timestamps[s]).toISOString(),
+												// 	oResult.result.values[s],
+												// 	oResult.result.states[s]
+												// ]
+											],
+											function (err, results) {
+												if (err) {
+													console.log(err);
+												}
+												if (results) {
+													console.log(results);
+												}
+											});
+									});
+
 								//store last_ts_read
 								connection.prepare("update \"iot.DataPoint\" set \"last_ts_read\" = ? where \"dp_id\" = ? ",
 									function (err, statement) {
@@ -272,7 +270,7 @@ function getNewData(iDP) {
 						if (results[0].last_ts_read === null) {
 							var tsFrom = new Date("2018-12-01").getTime(),
 								tsTo = new Date().getTime();
-							readData(iDPId, results[0].table_name.substring(0, 1), tsFrom, tsTo);
+							readData(iDPId, tsFrom, tsTo);
 						}
 					}
 				});

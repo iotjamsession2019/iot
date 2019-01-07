@@ -44,22 +44,25 @@ context iot {
     technical configuration {
         column store;
     };
-    entity DataValuesNum {
-        key dp_id       : Integer     not null;
-        key ts          : UTCDateTime not null;
-            value       : DecimalFloat;
-            state       : Integer;
+    entity DataValues {
+         dp_id       : Integer     not null;
+         ts          : UTCDateTime not null;
+         value       : DecimalFloat;
+         state       : Integer;
     }
     technical configuration {
         column store;
     };
-    entity DataValuesChar {
-        key dp_id       : Integer     not null;
-        key ts          : UTCDateTime not null;
-            value       : String(80);
-            state       : Integer;
-    }
-    technical configuration {
-        column store;
+    view Data as select from DataPoint left outer join DataValues on DataPoint.dp_id = DataValues.dp_id {
+    	DataPoint.dp_id,
+    	DataPoint.address,
+    	DataPoint.display_name,
+    	DataPoint.identifier,
+    	DataPoint.unit,
+    	DataPoint.room,
+    	DataValues.ts,
+    	DataValues.value,
+    	DataValues.state
     };
+    
 };

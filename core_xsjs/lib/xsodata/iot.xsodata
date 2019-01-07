@@ -7,4 +7,7 @@ service {
 
     "iot.DataPoint"
     	as "DataPoint";
+    	
+    "iot.Data"
+    	as "Data";
 }

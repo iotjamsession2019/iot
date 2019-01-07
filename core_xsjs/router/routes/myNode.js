@@ -186,38 +186,40 @@ function readData(iDP, tsFrom, tsTo) {
 							} else {
 								console.log(oResult.result.states.length + " records received. Storing now...");
 
-								var iData = [];
-								for (var s in oResult.result.states) {
-									iData.push(
-										parseInt(iDPId),
-										new Date(oResult.result.timestamps[s]).toISOString(),
-										parseFloat(oResult.result.values[s]),
-										parseInt(oResult.result.states[s])
-									);
-								}
+								// var iData = [];
+								for (var s=0; s < oResult.result.states; s++) {
+									// 	iData.push(
+									// 		parseInt(iDPId),
+									// 		new Date(oResult.result.timestamps[s]).toISOString(),
+									// 		parseFloat(oResult.result.values[s]),
+									// 		parseInt(oResult.result.states[s])
+									// 	);
+									// }
+									//for (var i= 0; i<iData.length; i++){
+									connection.prepare("insert into \"iot.DataValues\" values(?,?,?,?)",
+										function (err, statement) {
+											if (err) {
+												console.log("Could not insert new data");
+												return;
+											}
+											statement.exec([ //[ iData[i] ]
+													[parseInt(iDPId),
+														new Date(oResult.result.timestamps[s]).toISOString(),
+														oResult.result.values[s],
+														oResult.result.states[s]
+													]
 
-								connection.prepare("insert into \"iot.DataValues\" values(?,?,?,?)",
-									function (err, statement) {
-										if (err) {
-											console.log("Could not insert new data");
-											return;
-										}
-										statement.exec([ iData 
-												// [parseInt(iDPId),
-												// 	new Date(oResult.result.timestamps[s]).toISOString(),
-												// 	oResult.result.values[s],
-												// 	oResult.result.states[s]
-												// ]
-											],
-											function (err, results) {
-												if (err) {
-													console.log(err);
-												}
-												if (results) {
-													console.log(results);
-												}
-											});
-									});
+												],
+												function (err, results) {
+													if (err) {
+														console.log(err);
+													}
+													if (results) {
+														console.log(results);
+													}
+												});
+										});
+								}
 
 								//store last_ts_read
 								connection.prepare("update \"iot.DataPoint\" set \"last_ts_read\" = ? where \"dp_id\" = ? ",
@@ -275,25 +277,7 @@ function getNewData(iDP) {
 					}
 				});
 		});
-	// connection.query({
-	// 	rowsAsArray: true,
-	// 	sql: 'SELECT LAST_TS_READ, TABLE_NAME FROM homematic_data_points WHERE DP_ID = ' + iDPId
-	// })
-	// .then((rows) => {
-	// 	if (rows[0][0] === null) {
-	// 		console.log("Last TS of datapoint " + iDPId + " is null! Fetching complete Interval!");
-	// 		var tsFrom = new Date("2016-01-01").getTime(),
-	// 		tsTo = new Date().getTime();
-	// 		readData(iDPId, tsFrom, tsTo, rows[0][1]);
-	// 	} else {
-	// 		console.log("Last TS of datapoint " + iDPId + " is " + rows[0][0]);
-	// 		var tsFrom = new Date(rows[0][0]).getTime(),
-	// 		tsTo = new Date().getTime();
-	// 		readData(iDPId, tsFrom, tsTo, rows[0][1]);
-	// 	}
-	// }).catch(err => {
-	// 	console.log("Last TS of datapoint " + iDPId + " could not be read " + err);
-	// })
+
 }
 
 function checkForNewDatapoints() {

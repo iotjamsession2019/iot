@@ -186,15 +186,18 @@ function readData(iDP, tsFrom, tsTo) {
 							} else {
 								console.log(oResult.result.states.length + " records received. Storing now...");
 
-								// var iData = [];
-								for (var s=0; s < oResult.result.states; s++) {
-									// 	iData.push(
-									// 		parseInt(iDPId),
-									// 		new Date(oResult.result.timestamps[s]).toISOString(),
-									// 		parseFloat(oResult.result.values[s]),
-									// 		parseInt(oResult.result.states[s])
-									// 	);
-									// }
+								 var iData = [];
+								for (var s=0; s < oResult.result.states.length; s++) {
+									 	iData.push(
+									 		parseInt(iDPId),
+									 		new Date(oResult.result.timestamps[s]).toISOString(),
+									 		parseFloat(oResult.result.values[s]),
+									 		parseInt(oResult.result.states[s])
+									 	);
+									 
+									//console.log(new Date(oResult.result.timestamps[s]).toISOString());
+								}
+								//return;
 									//for (var i= 0; i<iData.length; i++){
 									connection.prepare("insert into \"iot.DataValues\" values(?,?,?,?)",
 										function (err, statement) {
@@ -202,7 +205,7 @@ function readData(iDP, tsFrom, tsTo) {
 												console.log("Could not insert new data");
 												return;
 											}
-											statement.exec([ //[ iData[i] ]
+											statement.exec([ iData
 													[parseInt(iDPId),
 														new Date(oResult.result.timestamps[s]).toISOString(),
 														oResult.result.values[s],
@@ -219,7 +222,7 @@ function readData(iDP, tsFrom, tsTo) {
 													}
 												});
 										});
-								}
+								//}
 
 								//store last_ts_read
 								connection.prepare("update \"iot.DataPoint\" set \"last_ts_read\" = ? where \"dp_id\" = ? ",

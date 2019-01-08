@@ -90,6 +90,9 @@ function storeNewDatapoint(iDP, oDP) {
 				],
 				function (err, results) {
 					aDatapoints.push(parseInt(iDPId));
+					if (aDatapoints.length === 1) {
+						intervalSync();
+					}
 				});
 		});
 }
@@ -184,70 +187,66 @@ function readData(iDP, tsFrom, tsTo) {
 							if (oResult.result.states.length === 0) {
 								readData(iDPId, ts2, new Date().getTime());
 							} else {
-								console.log(oResult.result.states.length + " records received. Storing now...");
-
-								 var iData = [];
-								for (var s=0; s < oResult.result.states.length; s++) {
-									 	iData.push(
-									 		parseInt(iDPId),
-									 		new Date(oResult.result.timestamps[s]).toISOString(),
-									 		parseFloat(oResult.result.values[s]),
-									 		parseInt(oResult.result.states[s])
-									 	);
-									 
-									//console.log(new Date(oResult.result.timestamps[s]).toISOString());
+								//console.log(oResult.result.states.length + " records received. Storing now...");
+								var iData = [];
+								for (var s = 0; s < oResult.result.states.length; s++) {
+									if (oResult.result.timestamps[s] !== undefined &&
+									    oResult.result.values[s] !== undefined &&
+									    oResult.result.states[s] !== undefined) {
+										iData.push([
+											parseInt(iDPId),
+											new Date(oResult.result.timestamps[s]).toISOString(),
+											parseFloat(oResult.result.values[s]),
+											parseInt(oResult.result.states[s])
+										]);
+									}
 								}
-								//return;
-									//for (var i= 0; i<iData.length; i++){
-									connection.prepare("insert into \"iot.DataValues\" values(?,?,?,?)",
-										function (err, statement) {
-											if (err) {
-												console.log("Could not insert new data");
-												return;
-											}
-											statement.exec([ iData
-													[parseInt(iDPId),
-														new Date(oResult.result.timestamps[s]).toISOString(),
-														oResult.result.values[s],
-														oResult.result.states[s]
-													]
-
-												],
-												function (err, results) {
-													if (err) {
-														console.log(err);
-													}
-													if (results) {
-														console.log(results);
-													}
-												});
-										});
-								//}
-
-								//store last_ts_read
-								connection.prepare("update \"iot.DataPoint\" set \"last_ts_read\" = ? where \"dp_id\" = ? ",
-									function (err, statement) {
-										if (err) {
-											console.log("Could not insert new data");
-											return;
-										}
-										statement.exec([
-												[new Date(ts2).toISOString(),
-													iDPId
-												]
-											],
-											function (err, results) {
+							
+										connection.prepare("insert into \"iot.DataValues\" values(?,?,?,?)",
+											function (err, statement) {
 												if (err) {
-													console.log(err);
+													console.log("Could not insert new data");
 													return;
 												}
-												console.log("New data for datapoint " + iDPId + " written successfully");
-											});
-									});
 
+												statement.exec( iData,
+													function (err, results) {
+														if (err) {
+															console.log(err);
+														}
+														
+													});
+
+											});
+									//}
+
+								//}
 							}
 
+							//store last_ts_read
+							connection.prepare("update \"iot.DataPoint\" set \"last_ts_read\" = ? where \"dp_id\" = ? ",
+								function (err, statement) {
+									if (err) {
+										console.log("Could not insert new data");
+										return;
+									}
+									statement.exec([
+											[new Date(ts2).toISOString(),
+												iDPId
+											]
+										],
+										function (err, results) {
+											if (err) {
+												console.log(err);
+												return;
+											}
+											//console.log("New data for datapoint " + iDPId + " written successfully");
+											intervalSync();
+										});
+								});
+
 						}
+						//}
 					}
 				}
 			});

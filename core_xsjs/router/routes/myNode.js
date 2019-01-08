@@ -146,7 +146,7 @@ function readData(iDP, tsFrom, tsTo) {
 			"params": [iDPId, ts1, ts2]
 		},
 		sUrl = 'http://' + sCCUIP + ':' + sCCUPort + "/query/jsonrpc.gy?j=" + JSON.stringify(sQuery);
-	if (new Date(ts1).toLocaleString() == new Date(ts2).toLocaleString()) {
+	if (new Date(ts1).toLocaleString() === new Date(ts2).toLocaleString()) {
 		console.log("Datapoint " + iDPId + " is up to date...next please...");
 		connection.prepare("update \"iot.DataPoint\" set \"last_ts_read\" = ? where \"dp_id\" = ? ",
 			function (err, statement) {
@@ -164,7 +164,7 @@ function readData(iDP, tsFrom, tsTo) {
 							console.log(err);
 							return;
 						}
-						console.log("Storing new timestamp for datapoint " + iDPId);
+						//console.log("Storing new timestamp for datapoint " + iDPId);
 						intervalSync();
 
 					});
@@ -175,7 +175,7 @@ function readData(iDP, tsFrom, tsTo) {
 		if (iDelta > 432000000) {
 			readData(iDP, ts1, (ts2 - parseInt(iDelta / 2)));
 		} else {
-			console.log("Datapoint " + iDPId + ": now getting data from " + new Date(ts1).toLocaleString() + " to " + new Date(ts2).toLocaleString());
+			//console.log("Datapoint " + iDPId + ": now getting data from " + new Date(ts1).toLocaleString() + " to " + new Date(ts2).toLocaleString());
 			request(sUrl, function (error, response, body) {
 				if (error) {
 					console.log(error);

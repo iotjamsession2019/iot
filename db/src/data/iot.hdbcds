@@ -53,6 +53,7 @@ context iot {
     technical configuration {
         column store;
     };
+    
     view Data as select from DataPoint left outer join DataValues on DataPoint.dp_id = DataValues.dp_id {
     	DataPoint.dp_id,
     	DataPoint.address,

@@ -4,10 +4,15 @@ service {
 
 	"iot.SettingParameters"
 	  as "SettingParameters";
-
-    "iot.DataPoint"
-    	as "DataPoint";
+    
+    "iot.DataValues"
+    	as "DataValues";
     	
+    "iot.DataPoint"
+    	as "DataPoint"
+    	navigates ("DataPoint2DataValues" as "toDataValues");
+    	association "DataPoint2DataValues" principal "DataPoint" ("dp_id") multiplicity "1"
+    	dependent "DataValues" ("dp_id") multiplicity "*";
     "iot.Data"
     	as "Data";
 }

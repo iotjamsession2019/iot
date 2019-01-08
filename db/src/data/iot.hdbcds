@@ -44,6 +44,7 @@ context iot {
     technical configuration {
         column store;
     };
+    
     entity DataValues {
          dp_id       : Integer     not null;
          ts          : UTCDateTime not null;

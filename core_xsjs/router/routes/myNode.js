@@ -191,8 +191,8 @@ function readData(iDP, tsFrom, tsTo) {
 								var iData = [];
 								for (var s = 0; s < oResult.result.states.length; s++) {
 									if (oResult.result.timestamps[s] !== undefined &&
-									    oResult.result.values[s] !== undefined &&
-									    oResult.result.states[s] !== undefined) {
+										oResult.result.values[s] !== undefined &&
+										oResult.result.states[s] !== undefined) {
 										iData.push([
 											parseInt(iDPId),
 											new Date(oResult.result.timestamps[s]).toISOString(),
@@ -201,24 +201,24 @@ function readData(iDP, tsFrom, tsTo) {
 										]);
 									}
 								}
-							
-										connection.prepare("insert into \"iot.DataValues\" values(?,?,?,?)",
-											function (err, statement) {
+
+								connection.prepare("insert into \"iot.DataValues\" values(?,?,?,?)",
+									function (err, statement) {
+										if (err) {
+											console.log("Could not insert new data");
+											return;
+										}
+
+										statement.exec(iData,
+											function (err, results) {
 												if (err) {
-													console.log("Could not insert new data");
-													return;
+													console.log(err);
 												}
 
-												statement.exec( iData,
-													function (err, results) {
-														if (err) {
-															console.log(err);
-														}
-														
-													});
-
 											});
-									//}
+
+									});
+								//}
 
 								//}
 							}
@@ -247,6 +247,8 @@ function readData(iDP, tsFrom, tsTo) {
 
 						}
 						//}
+					} else {
+						intervalSync();
 					}
 				}
 			});
@@ -273,6 +275,11 @@ function getNewData(iDP) {
 					} else {
 						if (results[0].last_ts_read === null) {
 							var tsFrom = new Date("2018-12-01").getTime(),
+								tsTo = new Date().getTime();
+							readData(iDPId, tsFrom, tsTo);
+						} else {
+							console.log("Last TS of datapoint " + iDPId + " is " + new Date(results[0].last_ts_read).toISOString());
+							var tsFrom = new Date(results[0].last_ts_read).getTime(),
 								tsTo = new Date().getTime();
 							readData(iDPId, tsFrom, tsTo);
 						}

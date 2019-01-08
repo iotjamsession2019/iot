@@ -1,1 +1,1 @@
-{"type":"mta","builders":{"default":"mtabuilder","configs":{}},"runners":{"configs":{}},"attributes":{"sap.watt.common.setting":["{\"hdbInactiveFiles\":{\"inactiveFileList\":[\"/iot/db/src/data/iot.hdbcds\"]}}"]},"mixinTypes":[]}
+{"type":"mta","builders":{"default":"mtabuilder","configs":{}},"runners":{"configs":{}},"attributes":{"sap.watt.common.setting":["{\"hdbInactiveFiles\":{\"inactiveFileList\":[]}}"]},"mixinTypes":[]}

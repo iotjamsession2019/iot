@@ -207,9 +207,10 @@ function readData(iDP, tsFrom, tsTo) {
 						if (err) {
 							console.log(err);
 							return;
+						} else {
+							//console.log("Storing new timestamp for datapoint " + iDPId);
+							intervalSync();
 						}
-						//console.log("Storing new timestamp for datapoint " + iDPId);
-						intervalSync();
 
 					});
 			});
@@ -249,6 +250,7 @@ function readData(iDP, tsFrom, tsTo) {
 								connection.prepare("insert into \"iot.DataValues\" values(?,?,?,?)",
 									function (err, statement) {
 										if (err) {
+											console.log(err);
 											console.log("Could not insert new data");
 											return;
 										}
@@ -257,6 +259,7 @@ function readData(iDP, tsFrom, tsTo) {
 											function (err, results) {
 												if (err) {
 													console.log(err);
+													return;
 												}
 
 											});
@@ -271,6 +274,7 @@ function readData(iDP, tsFrom, tsTo) {
 							connection.prepare("update \"iot.DataPoint\" set \"last_ts_read\" = ? where \"dp_id\" = ? ",
 								function (err, statement) {
 									if (err) {
+										console.log(err);
 										console.log("Could not insert new data");
 										return;
 									}
@@ -283,9 +287,10 @@ function readData(iDP, tsFrom, tsTo) {
 											if (err) {
 												console.log(err);
 												return;
+											} else {
+												//console.log("New data for datapoint " + iDPId + " written successfully");
+												intervalSync();
 											}
-											//console.log("New data for datapoint " + iDPId + " written successfully");
-											intervalSync();
 										});
 								});
 

@@ -83,5 +83,13 @@ context iot {
     	DataValues.value,
     	DataValues.state
     };
+    const jobConst : Integer = 1;
+    view SensorSyncJob as select from JobSettings {
+      :jobConst as id,
+      JobSettings.job_type,
+      JobSettings.run,
+      JobSettings.last_heartbeat
+    } where job_type = 'SENSOR_SYNC';
+      
     
 };

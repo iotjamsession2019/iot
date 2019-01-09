@@ -19,6 +19,11 @@ service {
     "iot.JobSettings"
        as "JobSettings";
     
+    "iot.SensorSyncJob"
+    	as "SensorSyncJob"
+    	key ("id");
+
+    
     "iot.HazardCodes"
     	as "HazardCodes";
 }

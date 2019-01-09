@@ -1,16 +1,17 @@
-<mvc:View controllerName="Dashboard.controller.App" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form" xmlns:table="sap.ui.table"
-	xmlns="sap.m">
+<mvc:View controllerName="Dashboard.controller.App" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form"
+	xmlns:table="sap.ui.table" xmlns="sap.m">
 	<App>
 		<pages>
 			<Page title="{i18n>title}" showNavButton="{oJSONModel>/secondPage}" navButtonPress="onButtonBack">
 				<content>
 					<Panel id="OutdoorPanel" expandable="true" expanded="true" headerText="{i18n>Administration}" width="auto" class="sapUiNoMargin">
-						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>JobSettings}"
-							subheader="{ parts: [{path: 'oJSONModel>/'}, {path: 'oJSONModel>/'}], formatter: '.formatter.outdoorGetSubHeader'}" press="pressOutdoor">
-							<TileContent footer="{oJSONModel>/}">
-								<NumericContent scale="" value="{oJSONModel>/}" icon="sap-icon://action-settings"/>
-							</TileContent>
-						</GenericTile>
+						<Text text="{ path:'/SensorSyncJob(1)/job_type' }"/>
+						<!--<GenericTile id="jobTile" class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>JobSettings}"-->
+						<!--	 press="pressSensorSync">-->
+						<!--	<TileContent footer="{oJSONModel>/}">-->
+						<!--		<NumericContent scale="" value="{oJSONModel>/}" icon="sap-icon://action-settings"/>-->
+						<!--	</TileContent>-->
+						<!--</GenericTile>-->
 						<Table id="idHazardCodeTable" inset="false" items="{/HazardCodes}" alternateRowColors="true">
 							<headerToolbar>
 								<Toolbar>

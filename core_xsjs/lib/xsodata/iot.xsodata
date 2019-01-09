@@ -15,4 +15,10 @@ service {
     	dependent "DataValues" ("dp_id") multiplicity "*";
     "iot.Data"
     	as "Data";
+    
+    "iot.JobSettings"
+       as "JobSettings";
+    
+    "iot.HazardCodes"
+    	as "HazardCodes";
 }

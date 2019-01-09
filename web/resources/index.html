@@ -7,19 +7,33 @@
 <!-- 1.) Load SAPUI5 (from a remote server), select theme and control library -->
 <script src="https://sapui5.hana.ondemand.com/resources/sap-ui-core.js"
 	id="sap-ui-bootstrap" data-sap-ui-libs="sap.m"
+	data-sap-ui-preload="async"
 	data-sap-ui-resourceroots='{"Dashboard": ""}'
-	data-sap-ui-theme="sap_bluecrystal">
+	data-sap-ui-theme="sap_belize_plus"
+	data-sap-ui-xx-bindingSyntax="complex"
+		data-sap-ui-compatVersion="edge">
 		</script>
+		<script type="text/javascript" src="/common/error.js" ></script> 
 <script>
-	sap.ui.getCore().attachInit(function() {
-				new sap.m.Shell({
-				    appWidthLimited:false,
-					app: new sap.ui.core.ComponentContainer({
-						height : "99%",
-						name : "Dashboard"
-					})
-				}).placeAt("content");
-			});
+	sap.ui.getCore().attachInit(function () {
+				var ComponentContainer = new sap.ui.core.ComponentContainer({
+            		height : "100%"
+            	});
+
+            	new sap.m.Shell({
+            		app: ComponentContainer,
+            		showLogout: true
+            	}).placeAt("content");
+
+            	var oComponent = sap.ui.component({
+            		id: "comp",
+            		name: "Dashboard",
+            		manifestFirst: true,
+            		async: true
+            	}).then(function(oComponent){
+            		ComponentContainer.setComponent(oComponent);
+            	});
+		});
 	</script>
 </head>
 <body class="sapUiBody">

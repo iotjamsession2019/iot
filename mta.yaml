@@ -30,6 +30,9 @@ modules:
       - name: hdi_db
       - name: db
       - name: CCU_HISTORIAN
+
+  
+
 resources:
   - name: UAA-service
     type: com.sap.xs.uaa-space

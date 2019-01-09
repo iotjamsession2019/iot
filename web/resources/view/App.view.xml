@@ -1,17 +1,39 @@
-<mvc:View controllerName="Dashboard.controller.App" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form"
+<mvc:View controllerName="Dashboard.controller.App" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form" xmlns:table="sap.ui.table"
 	xmlns="sap.m">
 	<App>
 		<pages>
 			<Page title="{i18n>title}" showNavButton="{oJSONModel>/secondPage}" navButtonPress="onButtonBack">
 				<content>
-				<Panel id="OutdoorPanel" expandable="true" expanded="true" headerText="{i18n>Administration}" width="auto" class="sapUiNoMargin">					
-					<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>JobSettings}"
-						subheader="{ parts: [{path: 'oJSONModel>/'}, {path: 'oJSONModel>/'}], formatter: '.formatter.outdoorGetSubHeader'}"
-						press="pressOutdoor">
-						<TileContent footer="{oJSONModel>/}">
-							<NumericContent scale="" value="{oJSONModel>/}" icon="sap-icon://action-settings"/>
-						</TileContent>
-					</GenericTile>
+					<Panel id="OutdoorPanel" expandable="true" expanded="true" headerText="{i18n>Administration}" width="auto" class="sapUiNoMargin">
+						<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>JobSettings}"
+							subheader="{ parts: [{path: 'oJSONModel>/'}, {path: 'oJSONModel>/'}], formatter: '.formatter.outdoorGetSubHeader'}" press="pressOutdoor">
+							<TileContent footer="{oJSONModel>/}">
+								<NumericContent scale="" value="{oJSONModel>/}" icon="sap-icon://action-settings"/>
+							</TileContent>
+						</GenericTile>
+						<Table id="idHazardCodeTable" inset="false" items="{/HazardCodes}" alternateRowColors="true">
+							<headerToolbar>
+								<Toolbar>
+									<Title text="{i18n>HazardCodes}" level="H2"/>
+								</Toolbar>
+							</headerToolbar>
+							<columns>
+								<Column width="12em">
+									<Text text="{i18n>HazardCode}"/>
+								</Column>
+								<Column minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>HazardDescription}"/>
+								</Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<Text text="{code}"/>
+										<Text text="{description}"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
 					</Panel>
 					<!--<Panel id="OutletPanel" expandable="true" expanded="{= !${device>/system/phone} }" headerText="{i18n>Outlets}" width="auto" class="sapUiNoMargin" >-->
 					<!--	<FlexBox height="180px" width="100%" alignItems="Stretch">-->
@@ -77,7 +99,6 @@
 					<!--		</ComboBox>-->
 					<!--		<DateRangeSelection id="sensorDRS" dateValue="{ path:'oJSONModel>/firstDate'}" secondDateValue="{ path:'oJSONModel>/secondDate'}"-->
 					<!--			minDate="{ path:'oJSONModel>/minDate'}" maxDate="{ path:'oJSONModel>/maxDate'}" visible="{oJSONModel>/showHeaderControls}"/>-->
-							
 					<!--		<lab:LineChartJS id="line_chart" datasets="{temp>/lineChart/datasets}" labels="{temp>/lineChart/labels}" titleDisplay="false" responsive="true" onResize="onResize"  maintainAspectRatio="true"-->
 					<!--			 onLegendItemClick="onLegendItemClick" onLegendItemHover="onLegendItemHover" onClick="onChartClick"-->
 					<!--			onHover="onHover" tooltipEnabled="true" onAnimationProgress="onAnimationProgress" onAnimationComplete="onAnimationComplete" showLines="true"-->

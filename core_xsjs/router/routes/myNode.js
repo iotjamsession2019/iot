@@ -47,7 +47,7 @@ function getBlacklist() {
 	for (var i in aSettings) {
 		if (aSettings[i].param == "CCU-DATAPOINT-IGNORE") {
 			aBlacklist.push(aSettings[i].value);
-			console.log(aSettings[i].value + " added to Blacklist (is ignored)");
+			//console.log(aSettings[i].value + " added to Blacklist (is ignored)");
 		}
 	}
 }
@@ -122,17 +122,61 @@ function fetchDatapoint(iDP) {
 
 function intervalSync() {
 	//console.log("Getting new data from registered datapoints");
-	if (aDatapoints.length === 0) {
-		return;
-	}
-	if (roundRobin < aDatapoints.length) {
-		console.log("Getting new data for datapoint " + aDatapoints[roundRobin] + " ...");
-		getNewData(aDatapoints[roundRobin]);
-		roundRobin++;
-	} else {
-		roundRobin = 0;
-		intervalSync();
-	}
+	connection.prepare(
+		"select \"run\" from \"iot.JobSettings\" where \"job_type\" = ?",
+		function (err, statement) {
+			if (err) {
+				console.log(err);
+				return;
+			}
+			statement.exec(["SENSOR_SYNC"],
+				function (err, results) {
+					if (err) {
+						console.log(err);
+						return;
+					} else {
+
+						if (results[0] && results[0].run && results[0].run === 'X') {
+							//job should run...update heartbeat...
+							if (aDatapoints.length === 0) {
+								return;
+							}
+							connection.prepare("update \"iot.JobSettings\" set \"last_heartbeat\" = ? where \"job_type\" = ? ",
+								function (err, statement) {
+									if (err) {
+										console.log(err);
+										return;
+									}
+									statement.exec([
+											[new Date().toISOString(),
+												"SENSOR_SYNC"
+											]
+										],
+										function (err, results) {
+											if (err) {
+												console.log(err);
+												return;
+											}
+											if (roundRobin < aDatapoints.length) {
+												//console.log("Getting new data for datapoint " + aDatapoints[roundRobin] + " ...");
+												getNewData(aDatapoints[roundRobin]);
+												roundRobin++;
+											} else {
+												roundRobin = 0;
+												intervalSync();
+											}
+
+										});
+								});
+
+						} else {
+							console.log("Job terminated! not active in JobSettings-Table");
+							return;
+						}
+					}
+				});
+		});
+
 }
 
 function readData(iDP, tsFrom, tsTo) {
@@ -171,8 +215,8 @@ function readData(iDP, tsFrom, tsTo) {
 			});
 
 	} else {
-		//no more than 5 days at once...
-		if (iDelta > 432000000) {
+		//no more than 1 day at once...
+		if (iDelta > 86400000) {
 			readData(iDP, ts1, (ts2 - parseInt(iDelta / 2)));
 		} else {
 			//console.log("Datapoint " + iDPId + ": now getting data from " + new Date(ts1).toLocaleString() + " to " + new Date(ts2).toLocaleString());
@@ -340,34 +384,53 @@ module.exports = function () {
 	app.get("/sync", function (req, res) {
 		var client = req.db;
 		connection = client;
-		client.prepare(
-			"select * from \"iot.Settings\" ",
+		connection.prepare(
+			"select \"run\" from \"iot.JobSettings\" where \"job_type\" = ?",
 			function (err, statement) {
 				if (err) {
-					res.type("text/plain").status(500).send("ERROR: " + err.toString());
+					console.log(err);
 					return;
 				}
-				statement.exec([],
+				statement.exec(["SENSOR_SYNC"],
 					function (err, results) {
 						if (err) {
-							res.type("text/plain").status(500).send("ERROR: " + err.toString());
+							console.log(err);
 							return;
-
 						} else {
-							aSettings = results;
-							getCCUIP();
-							getCCUPort();
-							getMaxDatapoint();
-							getBlacklist();
-							getCurrentDatapoints();
-							// var result = JSON.stringify({
-							// 	Objects: results
-							// });
-							// res.type("application/json").status(200).send(result);
-							res.send("sync is running");
+							if (results[0] && results[0].run && results[0].run === 'X') {
+								connection.prepare(
+									"select * from \"iot.Settings\" ",
+									function (err, statement) {
+										if (err) {
+											res.type("text/plain").status(500).send("ERROR: " + err.toString());
+											return;
+										}
+										statement.exec([],
+											function (err, results) {
+												if (err) {
+													res.type("text/plain").status(500).send("ERROR: " + err.toString());
+													return;
+
+												} else {
+													aSettings = results;
+													getCCUIP();
+													getCCUPort();
+													getMaxDatapoint();
+													getBlacklist();
+													getCurrentDatapoints();
+													res.send("sync is running");
+												}
+											});
+									});
+							} else {
+								console.log("Job terminated! not active in JobSettings-Table");
+								res.send("Job terminated! not active in JobSettings-Table");
+								return;
+							}
 						}
 					});
 			});
+
 	});
 
 	//Simple Database Select - Async Waterfall

@@ -1,0 +1,91 @@
+<mvc:View controllerName="Dashboard.controller.App" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form"
+	xmlns="sap.m">
+	<App>
+		<pages>
+			<Page title="{i18n>title}" showNavButton="{oJSONModel>/secondPage}" navButtonPress="onButtonBack">
+				<content>
+				<Panel id="OutdoorPanel" expandable="true" expanded="true" headerText="{i18n>Administration}" width="auto" class="sapUiNoMargin">					
+					<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>JobSettings}"
+						subheader="{ parts: [{path: 'oJSONModel>/'}, {path: 'oJSONModel>/'}], formatter: '.formatter.outdoorGetSubHeader'}"
+						press="pressOutdoor">
+						<TileContent footer="{oJSONModel>/}">
+							<NumericContent scale="" value="{oJSONModel>/}" icon="sap-icon://action-settings"/>
+						</TileContent>
+					</GenericTile>
+					</Panel>
+					<!--<Panel id="OutletPanel" expandable="true" expanded="{= !${device>/system/phone} }" headerText="{i18n>Outlets}" width="auto" class="sapUiNoMargin" >-->
+					<!--	<FlexBox height="180px" width="100%" alignItems="Stretch">-->
+					<!--		<items>-->
+					<!--			<Label text="{i18n>OutletWashingMachine}" class="sapUiSmallMarginTop sapUiTinyMarginEnd"/>-->
+					<!--			<Switch state="{oJSONModel>/stateWashingMachineOutlet}" change="onWashingMachineSwitchChange"-->
+					<!--				enabled="{path:'oJSONModel>/currentWashingMachine',formatter:'.formatter.getWashingMachineIdle'}">-->
+					<!--				<layoutData>-->
+					<!--					<FlexItemData growFactor="1"/>-->
+					<!--				</layoutData>-->
+					<!--			</Switch>-->
+					<!--			<GenericTile class="sapUiNoMarginBegin sapUiTinyMarginTop sapUiTinyMarginEnd tileLayout" header="{i18n>WattageWashingMachine}"-->
+					<!--				press="openWattageWashingMachine" visible="{oJSONModel>/stateWashingMachineOutlet}">-->
+					<!--				<TileContent footer="{path:'oJSONModel>/currentWashingMachine',formatter:'.formatter.getWashingMachineRunningText'}">-->
+					<!--					<NumericContent scale="W" value="{ path:'oJSONModel>/wattageWashingMachine', formatter:'.formatter.getWashingMachineWattage'}" valueColor="{path:'oJSONModel>/currentWashingMachine',formatter:'.formatter.getWashingMachineValueColor'}"/>-->
+					<!--				</TileContent>-->
+					<!--			</GenericTile>								-->
+					<!--			<Label text="{i18n>OutletDryer}" class="sapUiSmallMarginTop sapUiTinyMarginEnd"/>-->
+					<!--			<Switch state="{oJSONModel>/stateDryerOutlet}" change="onDryerSwitchChange"-->
+					<!--				enabled="{path:'oJSONModel>/currentDryer',formatter:'.formatter.getDryerIdle'}">-->
+					<!--				<layoutData>-->
+					<!--					<FlexItemData growFactor="1"/>-->
+					<!--				</layoutData>-->
+					<!--			</Switch>-->
+					<!--			<GenericTile class="sapUiNoMarginBegin sapUiTinyMarginTop sapUiTinyMarginEnd tileLayout" header="{i18n>WattageDryer}"-->
+					<!--				press="openWattageDryer" visible="{oJSONModel>/stateDryerOutlet}">-->
+					<!--				<TileContent footer="{path:'oJSONModel>/currentDryer',formatter:'.formatter.getDryerRunningText'}">-->
+					<!--					<NumericContent scale="W" value="{ path:'oJSONModel>/wattageDryer', formatter:'.formatter.getDryerWattage'}" valueColor="{path:'oJSONModel>/currentDryer',formatter:'.formatter.getDryerValueColor'}"/>-->
+					<!--				</TileContent>-->
+					<!--			</GenericTile>									-->
+					<!--			<Label text="{i18n>Outlet3DPrinter}" class="sapUiSmallMarginTop sapUiTinyMarginEnd"/>-->
+					<!--			<Switch state="{oJSONModel>/state3DPrinterOutlet}" change="on3DPrinterSwitchChange"-->
+					<!--				enabled="{path:'oJSONModel>/current3DPrinter',formatter:'.formatter.get3DPrinterIdle'}">-->
+					<!--				<layoutData>-->
+					<!--					<FlexItemData growFactor="1"/>-->
+					<!--				</layoutData>-->
+					<!--			</Switch>-->
+					<!--			<GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>Octoprint Dashboard}"-->
+					<!--				press="openPrintPopover" visible="{oJSONModel>/state3DPrinterOutlet}">-->
+					<!--				<TileContent footer="{path:'oJSONModel>/current3DPrinter',formatter:'.formatter.get3DPrinterRunningText'}">-->
+					<!--					<NumericContent scale="W" value="{ path:'oJSONModel>/wattage3DPrinter', formatter:'.formatter.get3DPrinterWattage'}" valueColor="{path:'oJSONModel>/current3DPrinter',formatter:'.formatter.get3DPrinterValueColor'}"/>-->
+					<!--				</TileContent>-->
+					<!--			</GenericTile>-->
+					<!--		</items>-->
+					<!--	</FlexBox>-->
+					<!--</Panel>-->
+					<!--<Panel id="LightsPanel" expandable="true" expanded="{= !${device>/system/phone} }" headerText="{i18n>Lights}" width="auto" class="sapUiNoMargin" >-->
+					<!--<Label text="{i18n>Disco}" class="sapUiSmallMarginTop sapUiTinyMarginEnd"/>-->
+					<!--	<Switch id="alarmSwitch" state="{oJSONModel>/stateAlarm}" change="onAlarmSwitchChange"/>-->
+					<!--	<IconTabBar id="LightsTabBar" />-->
+					<!--</Panel>-->
+					<!--<Panel id="chartPanel" visible="false" headerText="{oJSONModel>/lineChartTitle}">					-->
+					<!--	<content>-->
+					<!--		<MultiComboBox id="sensorMBC" selectionFinish="handleSensorMBC" items="{ path:'oJSONSensorModel>/sensors'}"-->
+					<!--			visible="{oJSONModel>/showHeaderControls}">-->
+					<!--			<core:Item key="{oJSONSensorModel>sensorId}" text="{oJSONSensorModel>sensorText}"/>-->
+					<!--		</MultiComboBox>-->
+					<!--		<ComboBox id="MotionComboBox" items="{ path:'oJSONMotionSensorModel>/sensors'}" visible="{oJSONModel>/showMotionControls}" selectionChange="handleMotionSensorChange">-->
+					<!--			<core:Item key="{oJSONMotionSensorModel>sensorId}" text="{oJSONMotionSensorModel>sensorText}" />-->
+					<!--		</ComboBox>-->
+					<!--		<ComboBox id="LinkedComboBox" items="{ path:'oJSONLinkedSensorModel>/sensors'}" visible="{oJSONModel>/showLinkedControls}" selectionChange="handleLinkedSensorChange">-->
+					<!--			<core:Item key="{oJSONLinkedSensorModel>sensorId}" text="{oJSONLinkedSensorModel>sensorText}" />-->
+					<!--		</ComboBox>-->
+					<!--		<DateRangeSelection id="sensorDRS" dateValue="{ path:'oJSONModel>/firstDate'}" secondDateValue="{ path:'oJSONModel>/secondDate'}"-->
+					<!--			minDate="{ path:'oJSONModel>/minDate'}" maxDate="{ path:'oJSONModel>/maxDate'}" visible="{oJSONModel>/showHeaderControls}"/>-->
+							
+					<!--		<lab:LineChartJS id="line_chart" datasets="{temp>/lineChart/datasets}" labels="{temp>/lineChart/labels}" titleDisplay="false" responsive="true" onResize="onResize"  maintainAspectRatio="true"-->
+					<!--			 onLegendItemClick="onLegendItemClick" onLegendItemHover="onLegendItemHover" onClick="onChartClick"-->
+					<!--			onHover="onHover" tooltipEnabled="true" onAnimationProgress="onAnimationProgress" onAnimationComplete="onAnimationComplete" showLines="true"-->
+					<!--			spanGaps="true"></lab:LineChartJS>-->
+					<!--	</content>-->
+					<!--</Panel>-->
+				</content>
+			</Page>
+		</pages>
+	</App>
+</mvc:View>

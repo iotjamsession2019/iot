@@ -55,6 +55,15 @@ context iot {
         column store;
     };
     
+    entity JobSettings{
+    	key job_type   : String(40) not null;
+    	run            : String(1);
+    	last_heartbeat : UTCDateTime;
+    }
+    technical configuration {
+        column store;
+    };
+    
     entity HazardCodes{
     	key code : Integer not null;
     	description: String(60);

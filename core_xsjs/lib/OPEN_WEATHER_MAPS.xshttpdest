@@ -1,0 +1,6 @@
+description = "OPEN_WEATHER_MAPS";
+host = "api.openweathermap.org";
+port = 80;
+proxyType = none;
+authType = none;
+timeout = 0;

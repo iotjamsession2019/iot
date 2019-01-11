@@ -30,9 +30,7 @@ modules:
       - name: hdi_db
       - name: db
       - name: CCU_HISTORIAN
-
-  
-
+      - name: OPEN_WEATHER_MAPS
 resources:
   - name: UAA-service
     type: com.sap.xs.uaa-space
@@ -51,3 +49,7 @@ resources:
       service-name: CCU_HISTORIAN
     properties:
       CCU_HISTORIAN: '${service-name}'
+  - name: OPEN_WEATHER_MAPS
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: OPEN_WEATHER_MAPS

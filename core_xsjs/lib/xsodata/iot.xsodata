@@ -23,7 +23,6 @@ service {
     	as "SensorSyncJob"
     	key ("id");
 
-    
     "iot.HazardCodes"
     	as "HazardCodes";
 }

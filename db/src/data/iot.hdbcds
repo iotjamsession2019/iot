@@ -27,6 +27,56 @@ context iot {
     technical configuration {
         column store;
     };
+    
+    entity Equipment{
+    	key equnr : String(18) not null;
+    	eqtxt : String(40);
+    	sernr : String(18);
+    	matnr : String(18);
+    	room  : String(255);
+    	building: String(255);
+    }
+    technical configuration {
+        column store;
+    };
+    
+    entity Notification{
+    	key qmnum: String(12) not null;
+    	qmtxt: String(40);
+    	equnr: String(18);
+        codegr: String(8);
+        code: String(4);
+    	resp_name:String(255);
+    	notif_status:String(40);
+    	transf_status:String(40);
+    }
+    technical configuration {
+        column store;
+    };
+    
+    entity NotifTasks{
+    	key qmnum: String(12) not null;
+    	key taskcodegr: String(8);
+        key taskcode: String(4);
+    }
+    
+    entity Tasks{
+        key taskcodegr: String(8);
+        key taskcode: String(4);
+    	task_text: String(80);
+    }
+    technical configuration {
+        column store;
+    };
+    
+    entity Problems{
+    	key codegr: String(8);
+        key code: String(4);
+        problem_text : String(40);
+    }
+    technical configuration {
+        column store;
+    };
 
     entity Settings {
         key param : String(50) not null;
@@ -72,6 +122,7 @@ context iot {
         column store;
     };
     
+    
     view Data as select from DataPoint left outer join DataValues on DataPoint.dp_id = DataValues.dp_id {
     	DataPoint.dp_id,
     	DataPoint.address,
@@ -83,6 +134,7 @@ context iot {
     	DataValues.value,
     	DataValues.state
     };
+    
     const jobConst : Integer = 1;
     view SensorSyncJob as select from JobSettings {
       :jobConst as id,

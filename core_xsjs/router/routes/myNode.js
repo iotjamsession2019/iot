@@ -99,7 +99,7 @@ function storeNewDatapoint(iDP, oDP) {
 
 function fetchDatapoint(iDP) {
 	var iDatapoint = iDP;
-	console.log("trying to fetch datapoint " + iDP);
+	//console.log("trying to fetch datapoint " + iDP);
 
 	request('http://' + sCCUIP + ':' + sCCUPort + "/query/jsonrpc.gy?m=getDataPoint&p1=" + iDP, function (error, response, body) {
 		if (error) {
@@ -111,7 +111,7 @@ function fetchDatapoint(iDP) {
 			if (oDP.result) {
 				if (oDP.result.id.identifier && isBlacklisted(oDP.result.id.identifier) ||
 					oDP.result.historyTableName.substring(0, 1) !== "D") {
-					console.log(oDP.result.id.identifier + " is blacklisted");
+					//console.log(oDP.result.id.identifier + " is blacklisted");
 				} else {
 					storeNewDatapoint(iDatapoint, oDP);
 				}
@@ -265,9 +265,7 @@ function readData(iDP, tsFrom, tsTo) {
 											});
 
 									});
-								//}
 
-								//}
 							}
 
 							//store last_ts_read

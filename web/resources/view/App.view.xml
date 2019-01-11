@@ -5,7 +5,18 @@
 			<Page title="{i18n>title}" showNavButton="{oJSONModel>/secondPage}" navButtonPress="onButtonBack">
 				<content>
 					<Panel id="OutdoorPanel" expandable="true" expanded="true" headerText="{i18n>Administration}" width="auto" class="sapUiNoMargin">
-						<Text text="{ path:'/SensorSyncJob(1)/job_type' }"/>
+						<FlexBox height="180px" width="100%" alignItems="Stretch">
+							<items>
+								<Label text="{i18n>SensorSyncJobRunning}" class="sapUiSmallMarginTop sapUiTinyMarginEnd"/>
+								<Switch id="idSensorSyncSwitch" type="AcceptReject" state="{oJSONModel>/running}" change="onSensorSyncSwitchChange">
+									<layoutData>
+										<FlexItemData growFactor="1"/>
+									</layoutData>
+								</Switch>
+								<Label text="{i18n>LastJobUpdate}" class="sapUiSmallMarginTop sapUiTinyMarginEnd"/>
+								<DateTimePicker editable="false" value ="{path:'oJSONModel>/last_heartbeat', type:'sap.ui.model.type.DateTime', formatOptions: { style: 'medium', strictParsing: true}}"/>
+							</items>
+						</FlexBox>
 						<!--<GenericTile id="jobTile" class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>JobSettings}"-->
 						<!--	 press="pressSensorSync">-->
 						<!--	<TileContent footer="{oJSONModel>/}">-->

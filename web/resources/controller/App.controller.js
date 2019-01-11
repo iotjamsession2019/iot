@@ -23,6 +23,7 @@ sap.ui.define([
 				delay: 0
 			});
 			this.getView().setModel(oViewModel, "appView");
+			this.initJSONModel();
 			//this._oODataModel = new sap.ui.model.odata.ODataModel("/xsodata/iot.xsodata", true);
 			
 		},
@@ -60,6 +61,38 @@ sap.ui.define([
 			} else {
 				this.getRouter().navTo("master", {}, true);
 			}
+		},
+		onSensorSyncSwitchChange: function(oEvent){
+			
+		},
+		updateJobStatus: function(){
+			var sUrl = "/xsjs/getSensorSyncStatus.xsjs",
+			oJSONModel = this.getView().getModel("oJSONModel"),
+			that = this;
+
+			$.ajax({
+				type: 'GET',
+				url: sUrl,
+				dataType: 'json',
+				success: function (data, textStatus, jqXHR) {
+
+					if (data) {
+						oJSONModel.setProperty("/running", data.running);
+						oJSONModel.setProperty("/last_heartbeat", new Date(data.last_heartbeat));
+					}
+
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					console.log(jqXHR, textStatus, errorThrown);
+				}
+			});
+		},
+		initJSONModel: function(){
+			var oJSONModel = new JSONModel();
+			oJSONModel.setProperty("/running", false);
+			oJSONModel.setProperty("/last_heartbeat", null);
+			this.getView().setModel(oJSONModel, "oJSONModel");
+			setInterval(this.updateJobStatus(),1000);
 		}
 
 	});
